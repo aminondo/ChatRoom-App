@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -74,12 +75,30 @@ int user_list::write_to_file(){
   return 0;
 }
 
+int user_list::read_from_file(){
+  string user, pass;
+  string line;
+  ifstream myfile("users.txt");
+  if(myfile.is_open()){
+    while( getline(myfile, line) ){
+      istringstream iss(line);
+      iss >> user;
+      iss >> pass;
+      add_user(user, pass);
+    }
+    myfile.close();
+  }
+  return 0;
+}
+
 
 int main(){
   user_list users;// = user_list();
-  users.add_user("alice", "password");
-  users.add_user("bernie", "asdfa");
+  //users.add_user("alice", "password");
+  users.read_from_file();
   users.print_users();
+  users.add_user("antonoi", "fasdaf");
+
   cout << users.search("alice") << endl;
   users.write_to_file();
 }
