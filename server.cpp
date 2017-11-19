@@ -3,6 +3,8 @@
 #include <string>
 #include <string.h>
 #include <iostream>
+//#include <vector>
+//#include <utility>
 
 //networks
 #include <sys/types.h>
@@ -16,11 +18,17 @@ int PORT = 41046;
 int MAX_PENDING = 5;
 int MAXLINE = 256;
 
+
+
+
+
 int main() {
   struct sockaddr_in sin;
   char buff[MAXLINE], msg[MAXLINE], path[MAXLINE];
   int s, new_s, opt;
   unsigned int len;
+  //users
+  //vector<pair<string, string> > users;
 
   //build address data structure
   bzero(&sin, sizeof(sin));
