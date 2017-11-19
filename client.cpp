@@ -57,4 +57,10 @@ int main(int argc, char *argv[]) {
     perror("Error connnecting socket\n");
     exit(1);
   }
+
+  //send user to server
+  if(send(s, user, strlen(user), 0 ) == -1){
+    perror("Client send error\n");
+    exit(1);
+  }
 }

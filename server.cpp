@@ -52,7 +52,7 @@ int main() {
     perror("ERROR listenign");
     exit(1);
   }
-
+  cout << "waiting for connection\n" << endl;
   //wait for connection
   while(1){
     if((new_s = accept(s, (struct sockaddr *)&sin, &len)) < 0){
@@ -67,7 +67,7 @@ int main() {
       }
       if(len==0)
         break;
-      cout << "TCP recieved: " << buff << endl;
+      cout << "connected to " << buff << endl;
     }
   }
 
