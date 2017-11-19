@@ -16,6 +16,7 @@ int main( int argc, char * argv[] ) {
   struct hostent *hp;
   struct sockaddr_in sin;
   char *host;
+
   char buff[MAXLINE], msg[MAXLINE];
   int len, s;
 
