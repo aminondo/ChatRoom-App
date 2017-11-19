@@ -52,4 +52,9 @@ int main(int argc, char *argv[]) {
   }
   cout << "Welcome\n" << endl;
 
+  //connect created socket to remote server
+  if(connect(s, (struct sockaddr *)&sin, sizeof(sin)) < 0){
+    perror("Error connnecting socket\n");
+    exit(1);
+  }
 }
