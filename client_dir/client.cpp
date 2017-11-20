@@ -147,7 +147,6 @@ int main(int argc, char *argv[]) {
       //cout << "sent request for active users\n";
       //recieve active users, handled by separate thread
       cout << "select user: ";
-      sleep(1);
       cout << "\n>> ";
       bzero((char *)&buff, sizeof(buff));
       cin >> buff;
@@ -202,7 +201,6 @@ void *handle_messages(void *) {
     //data message
     //cout << buff[0];
     if (!strncmp(buff, "D", 1)){
-      cout << "receiving...\n";
       string tmp(buff);
       tmp.erase(0,2);
       cout << "\n\n************************************\n";

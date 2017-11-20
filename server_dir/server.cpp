@@ -287,6 +287,7 @@ void *client_interact(void *ptr) {
         strcat(msg, username.c_str());
         strcat(msg, ": ");
         string tmp(buff);
+        cout << tmp << endl;
         strcat(msg, tmp.c_str());
         cout << msg << endl;
         if(send(recvr.client_s, msg, strlen(msg), 0) == -1){
@@ -310,11 +311,25 @@ void *client_interact(void *ptr) {
       //wait for message
       //recieve message
       bzero((char *)&buff, sizeof(buff));
+      cout << buff;
       if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
         perror("Server recieve error");
         exit(1);
       }
-      cout << "message to broadcast " << buff << endl;
+      cout << buff << endl;
+      bzero((char *)&msg, sizeof(msg));
+      strcat(msg, "D Broadcast:");
+      strcat(msg, buff);
+
+      //send message to all users
+      for(vector<active>::iterator it = active_users.begin(); it != active_users.end(); ++it){
+        if(send((*it).client_s, msg, strlen(msg), 0) == -1){
+          perror("Server send error\n");
+          exit(1);
+        }
+      }
+
+
 
     } else {
       cout << "command not understood\n";
