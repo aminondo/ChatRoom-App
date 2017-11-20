@@ -71,28 +71,26 @@ int main() {
       exit(1);
     }
 
-  //receive username
-  if((len = recv(new_s, buff, sizeof(buff), 0)) == -1){
-    perror("Server recieve error");
-    exit(1);
-  }
-  if(len==0)
-    break;
-  username = buff;
-  cout << "username trying to connect: " << username << endl;
-  //check whether username already registered
-  if(reg_users.search(username) == 0){ //if exists ask for password
-    cout << "username exists. enter password: \n";
-    //receive password
+    //receive username
     if((len = recv(new_s, buff, sizeof(buff), 0)) == -1){
       perror("Server recieve error");
       exit(1);
     }
     if(len==0)
       break;
-    password = buff;
-    while(reg_users.validate_user(username, password) == 1) { //password incorrect
-      cout << "password incorrect. try again: \n";
+    username = buff;
+    cout << "username trying to connect: " << username << endl;
+    //check whether username already registered
+    if(reg_users.search(username) == 0){ //if exists ask for password
+      cout << "user registered. asking for password\n";
+      bzero((char *)&msg, sizeof(msg));
+      strcat(msg, "username exists. enter password: \n");
+      //send password request
+      if(send(new_s, msg, strlen(msg), 0) == -1){
+        perror("Server send error\n");
+        exit(1);
+      }
+      //receive password
       if((len = recv(new_s, buff, sizeof(buff), 0)) == -1){
         perror("Server recieve error");
         exit(1);
@@ -100,18 +98,55 @@ int main() {
       if(len==0)
         break;
       password = buff;
+      while(reg_users.validate_user(username, password) == 1) { //password incorrect
+        //reset msg buffer and request password again
+        bzero((char *)&msg, sizeof(msg));
+        strcat(msg,"password incorrect. try again: \n");
+        cout << msg << endl;
+        if(send(new_s, msg, strlen(msg), 0) == -1){
+          perror("Server send error\n");
+          exit(1);
+        }
+
+        if((len = recv(new_s, buff, sizeof(buff), 0)) == -1){
+          perror("Server recieve error");
+          exit(1);
+        }
+        if(len==0)
+          break;
+        password = buff;
+      }
+    } else { //if user doesnt exist, register user
+      cout << "registering user\n";
+      bzero((char *)&msg, sizeof(msg));
+      strcat(msg, "username doesn't exist. enter a password to register: \n");
+      //send password request
+      if(send(new_s, msg, strlen(msg), 0) == -1){
+        perror("Server send error\n");
+        exit(1);
+      }
+      //receive password
+      if((len = recv(new_s, buff, sizeof(buff), 0)) == -1){
+        perror("Server recieve error");
+        exit(1);
+      }
+      if(len==0)
+        break;
+      password = buff;
+      reg_users.add_user(username, password);
+      //cout << "user logged in\n";
+
+
     }
-  } else { //if user doesnt exist, register user
-    cout << "username doesn't exist. enter a password to register: \n";
-    cin >> password;
-    reg_users.add_user(username, password);
-  }
-
-
-    while(1) {
-
-
+    cout << "user logged in\n";
+    //send ack to client
+    bzero((char *)&msg, sizeof(msg));
+    strcat(msg, "ACK");
+    if(send(new_s, msg, strlen(msg), 0) == -1){
+      perror("Server send error\n");
+      exit(1);
     }
+
   }
 
 

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 
 //networks
@@ -19,8 +20,11 @@ int main(int argc, char *argv[]) {
   struct hostent *hp;
   struct sockaddr_in sin;
   char * host, *user;
+  string username;
   int port;
-  string buff, msg;
+  char buff[MAXLINE], msg[MAXLINE], password[MAXLINE];
+
+  //string buff, msg;
   int len, s;
 
   //check arguments
@@ -59,9 +63,45 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  //send user to server
+  //send username to server
   if(send(s, user, strlen(user), 0 ) == -1){
     perror("Client send error\n");
     exit(1);
   }
+  //recieve request to register or log in, will continue to loop until ack is recieved
+  if((len = recv(s, buff, sizeof(buff), 0)) == -1){
+    perror("Client receive error\n");
+    exit(1);
+  }
+  cout << buff << endl;
+  //I know that what is being requested is the password, no matter if user
+  //registers or logs in
+  cin >> password;
+  if(send(s, password, strlen(password), 0 ) == -1){
+    perror("Client send error\n");
+    exit(1);
+  }
+  //recieve ack or error
+  if((len = recv(s, buff, sizeof(buff), 0)) == -1){
+    perror("Client receive error\n");
+    exit(1);
+  }
+  while(strncmp(buff, "ACK", 3)){
+    cout << buff << endl;
+    cin >> password;
+    if(send(s, password, strlen(password), 0 ) == -1){
+      perror("Client send error\n");
+      exit(1);
+    }
+    //recieve ack or error
+    if((len = recv(s, buff, sizeof(buff), 0)) == -1){
+      perror("Client receive error\n");
+      exit(1);
+    }
+  }
+  //logged in
+  cout << "LOGGED IN!\n";
+
+
+
 }
