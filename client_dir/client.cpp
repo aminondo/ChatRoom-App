@@ -14,13 +14,11 @@
 
 #define PORT 41046
 #define MAXLINE 256
+int len, s;
 
 using namespace std;
 
-void *handler(void *threadid) {
-  //handle request x
-  pthread_exit(NULL);
-}
+void *handle_messages(void *);
 
 
 int main(int argc, char *argv[]) {
@@ -32,7 +30,6 @@ int main(int argc, char *argv[]) {
   char buff[MAXLINE], op[MAXLINE], password[MAXLINE];
 
   //string buff, msg;
-  int len, s;
 
   //check arguments
   if(argc == 4){
@@ -108,8 +105,16 @@ int main(int argc, char *argv[]) {
   }
   //logged in
   cout << "LOGGED IN!\n";
+
+  pthread_t thread;
+  int rc = pthread_create(&thread, NULL, handle_messages, NULL);
+
   //prompt user for operation
   while(1){
+    if(rc) {
+      cout << "ERROR: unable to create thread\n";
+      exit(-1);
+    }
     cout << "press B for broadcasting.\n";
     cout << "press P for private messaging.\n";
     cout << "press E for exit.\n";
@@ -117,11 +122,39 @@ int main(int argc, char *argv[]) {
     cin >> op;
     if(!strncmp(op, "E", 1)){ //quit command
       cout << "Goodbye!\n";
+      //send server E command so that server removes user from online list
+      if(send(s, op, strlen(op), 0 ) == -1){
+        perror("Client send error\n");
+        exit(1);
+      }
+
       break;
+    }
+    if(!strncmp(op, "P", 1)){ //private message
+      //private_message();
+    }
+    if(!strncmp(op, "B", 1)){ //broadcast message
+      //broadcast();
     }
   }
 
   close(s);
+  return 0;
+}
 
+void *handle_messages(void *) {
+  char buff[MAXLINE];
+  if((len = recv(s, buff, sizeof(buff), 0)) == -1){
+    perror("Client receive error\n");
+    exit(1);
+  }
+  while (1) {
+    string message;
+    //data message
+    if (1){
 
+    }else {
+      //handle command message
+    }
+  }
 }

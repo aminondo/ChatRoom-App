@@ -8,7 +8,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <errno.h>
-
+#include <vector>
 
 //networks
 #include <sys/types.h>
@@ -32,6 +32,7 @@ struct thread_args {
 //prototypes
 void *client_interact(void *ptr);
 
+vector<string> active_users;
 
 
 int main() {
@@ -98,7 +99,10 @@ int main() {
     //join threads
     pthread_join(thread, NULL);
   }
-  close(client_s);
+
+
+  //stop main socket
+  close(s);
 } //main()
 
 //**************************************************************/
@@ -183,6 +187,8 @@ void *client_interact(void *ptr) {
 
   }
   cout << "user logged in\n";
+  //add user to active users
+  active_users.push_back(username);
   //send ack to client
   bzero((char *)&msg, sizeof(msg));
   strcat(msg, "ACK");
@@ -190,6 +196,37 @@ void *client_interact(void *ptr) {
     perror("Server send error\n");
     exit(1);
   }
+
+  //waiting for command from user
+  while(1) {
+      //receive command from user
+      if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
+        perror("Server recieve error");
+        exit(1);
+      }
+      if(!strncmp(buff, "E", 1)){ //if E
+        //remove active user from vector
+        for(vector<string>::iterator it = active_users.begin(); it != active_users.end(); ++it){
+          if (*it == username){
+            cout << "removing active user\n";
+            active_users.erase(it);
+            cout << "removed active user\n";
+            break; //stop for loop
+          }
+        }
+        break; //stop while loop
+      } else if(!strncmp(buff, "P", 1)){ //if P
+
+      } else if(!strncmp(buff, "B", 1)){ //if B
+
+      } else {
+        cout << "command not understood\n";
+      }
+
+
+  }
   //update reg_users file
   reg_users.write_to_file();
+  cout << "connection closed\n";
+  close(client_s);
 }
