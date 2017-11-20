@@ -42,9 +42,7 @@ int main() {
   unsigned int len;
   user_list reg_users;
 
-  //load registered users
-  if(reg_users.read_from_file() == 1)
-    cout << "No users registered\n";
+
 
   //build address data structure
   bzero(&sin, sizeof(sin));
@@ -84,6 +82,10 @@ int main() {
       continue;
     }
     cout << "Connection accepted.\n";
+    //load registered users
+    if(reg_users.read_from_file() == 1)
+      cout << "No users registered\n";
+
     pthread_t thread;
     thread_args args;
     args.s = s;
@@ -97,7 +99,6 @@ int main() {
     }
   }
   close(client_s);
-  reg_users.write_to_file();
 
 
 }
@@ -196,5 +197,9 @@ void *client_interact(void *ptr) {
     perror("Server send error\n");
     exit(1);
   }
+  //update reg_users file
+  reg_users.write_to_file();
+
+
 
 }
