@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#include <unistd.h>
 
 
 //networks
@@ -21,13 +22,14 @@ void *handler(void *threadid) {
   pthread_exit(NULL);
 }
 
+
 int main(int argc, char *argv[]) {
   struct hostent *hp;
   struct sockaddr_in sin;
   char * host, *user;
   string username;
   int port;
-  char buff[MAXLINE], msg[MAXLINE], password[MAXLINE];
+  char buff[MAXLINE], op[MAXLINE], password[MAXLINE];
 
   //string buff, msg;
   int len, s;
@@ -106,7 +108,20 @@ int main(int argc, char *argv[]) {
   }
   //logged in
   cout << "LOGGED IN!\n";
+  //prompt user for operation
+  while(1){
+    cout << "press B for broadcasting.\n";
+    cout << "press P for private messaging.\n";
+    cout << "press E for exit.\n";
+    cout << ">> ";
+    cin >> op;
+    if(!strncmp(op, "E", 1)){ //quit command
+      cout << "Goodbye!\n";
+      break;
+    }
+  }
 
+  close(s);
 
 
 }

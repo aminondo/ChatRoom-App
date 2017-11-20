@@ -29,12 +29,10 @@ struct thread_args {
   user_list reg_users;
 };
 
+//prototypes
 void *client_interact(void *ptr);
 
-//**********************************************/
-//**********************************************/
-//**********************************************/
-//**********************************************/
+
 
 int main() {
   struct sockaddr_in sin;
@@ -97,17 +95,15 @@ int main() {
       perror("Error creating thread\n");
       exit(1);
     }
+    //join threads
+    pthread_join(thread, NULL);
   }
   close(client_s);
+} //main()
 
-
-}
-
-//**********************************************/
-//**********************************************/
+//**************************************************************/
 //Helper functions
-//**********************************************/
-//**********************************************/
+//**************************************************************/
 void *client_interact(void *ptr) {
   thread_args *data;
   data = (thread_args *) ptr;
@@ -118,9 +114,6 @@ void *client_interact(void *ptr) {
   char buff[MAXLINE], msg[MAXLINE];
   unsigned int len;
   string username, password;
-
-
-
 
   //receive username
   if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
@@ -199,7 +192,4 @@ void *client_interact(void *ptr) {
   }
   //update reg_users file
   reg_users.write_to_file();
-
-
-
 }
