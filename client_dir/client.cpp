@@ -81,6 +81,7 @@ int main(int argc, char *argv[]) {
   //I know that what is being requested is the password, no matter if user
   //registers or logs in
   cin >> password;
+
   if(send(s, password, strlen(password), 0 ) == -1){
     perror("Client send error\n");
     exit(1);
@@ -91,8 +92,10 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
   while(strncmp(buff, "ACK", 3)){
+    cout << "password was incorrect.trying again\n";
     cout << buff << endl;
     cin >> password;
+    cout << password;
     if(send(s, password, strlen(password), 0 ) == -1){
       perror("Client send error\n");
       exit(1);

@@ -29,7 +29,6 @@ void user_list::print_users(){
 
 //O(n)
 int user_list::search(string username){
-  struct User ret;
   struct User *tmp = head;
   while( tmp != NULL){
     if(tmp->username == username)
@@ -39,19 +38,29 @@ int user_list::search(string username){
   return 1; //user not found
 }
 
-int user_list::write_to_file(){
+int user_list::write_to_file(string username, string password){
   ofstream myfile;
-  myfile.open("users.txt");
+  myfile.open("users.txt", ios_base::app);
   struct User *tmp = head;
-  while (tmp != NULL){
-    myfile << tmp->username << " " << tmp->password << "\n";
-    tmp = tmp->nxt;
-  }
-  myfile.close();
+  myfile << username << " " << password << "\n";
+
+  //myfile.close();
   return 0;
 }
 
+int user_list::validate_user(string username, string password){
+  struct User *tmp = head;
+  while( tmp != NULL){
+    if(tmp->username == username && tmp->password == password)
+      return 0; //user found
+    tmp = tmp->nxt;
+  }
+  return 1; //user not found
+}
+
 int user_list::read_from_file(){
+  //struct User *tmp;
+  head = new User();
   string user, pass;
   string line;
   ifstream myfile("users.txt");
@@ -68,22 +77,16 @@ int user_list::read_from_file(){
   return 1;
 }
 
-int user_list::validate_user(string username, string password){
-  struct User *tmp = head;
-  while (tmp != NULL) {
-    if(tmp->username == username && tmp->password == password)
-      return 0; //validation correct
-  }
-  return 1; //validation failed
-}
 /*
+
 int main(){
   user_list users;// = user_list();
-  //users.add_user("alice", "password");
-  cout << users.read_from_file() << endl;
-  //users.print_users();
+  users.add_user("alice", "password");
+  //cout << users.read_from_file() << endl;
+  users.print_users();
   //users.add_user("antonoi", "fasdaf");
-
-  cout << users.search("alice") << endl;
-  users.write_to_file();
-}*/
+  cout << users.validate_user("alice", "password") << endl;
+  //cout << users.search("alice") << endl;
+  //users.write_to_file();
+}
+*/

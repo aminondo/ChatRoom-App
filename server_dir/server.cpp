@@ -120,17 +120,15 @@ void *client_interact(void *ptr) {
   string username, password;
 
   //receive username
+  bzero((char *)&buff, sizeof(buff));
   if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
     perror("Server recieve error");
     exit(1);
   }
-  if(len==0)
-    exit(1);
   username = buff;
   cout << "username trying to connect: " << username << endl;
   //check whether username already registered
   if(reg_users.search(username) == 0){ //if exists ask for password
-    cout << "user registered. asking for password\n";
     bzero((char *)&msg, sizeof(msg));
     strcat(msg, "username exists. enter password: \n");
     //send password request
@@ -139,14 +137,14 @@ void *client_interact(void *ptr) {
       exit(1);
     }
     //receive password
+    bzero((char *)&buff, sizeof(buff));
     if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
       perror("Server recieve error");
       exit(1);
     }
-    if(len==0)
-      exit(1);
     password = buff;
     while(reg_users.validate_user(username, password) == 1) { //password incorrect
+      cout << "password incorrect\n";
       //reset msg buffer and request password again
       bzero((char *)&msg, sizeof(msg));
       strcat(msg,"password incorrect. try again: \n");
@@ -155,7 +153,7 @@ void *client_interact(void *ptr) {
         perror("Server send error\n");
         exit(1);
       }
-
+      bzero((char *)&buff, sizeof(buff));
       if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
         perror("Server recieve error");
         exit(1);
@@ -174,19 +172,25 @@ void *client_interact(void *ptr) {
       exit(1);
     }
     //receive password
+    bzero((char *)&buff, sizeof(buff));
+
     if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
       perror("Server recieve error");
       exit(1);
     }
-    if(len==0)
-      exit(1);
     password = buff;
-    reg_users.add_user(username, password);
+    cout << password << endl;
+    //reg_users.add_user(username, password);
+    reg_users.write_to_file(username, password);
+    cout << "printing registered users\n";
+    reg_users.read_from_file();
+    reg_users.print_users();
     //cout << "user logged in\n";
 
 
   }
   cout << "user logged in\n";
+  //update reg_users file
   //add user to active users
   active_users.push_back(username);
   //send ack to client
@@ -225,8 +229,7 @@ void *client_interact(void *ptr) {
 
 
   }
-  //update reg_users file
-  reg_users.write_to_file();
+
   cout << "connection closed\n";
   close(client_s);
 }
