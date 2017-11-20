@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
     cout << "press P for private messaging.\n";
     cout << "press E for exit.\n";
     cout << ">> ";
-    memset(op, '\0', sizeof op);
+    memset(op, 0, sizeof op);
     cin >> op;
     if(!strncmp(op, "E", 1)){ //quit command
       cout << "Goodbye!\n";
@@ -158,7 +158,7 @@ int main(int argc, char *argv[]) {
       //recieve active users, handled by separate thread
       cout << "select user: ";
       cout << "\n>> ";
-      memset(buff, '\0', sizeof buff);
+      memset(buff, 0, sizeof buff);
       cin >> buff;
       if(send(s, buff, strlen(buff), 0 ) == -1){
         perror("Client send error\n");
@@ -167,11 +167,11 @@ int main(int argc, char *argv[]) {
       //send message back to server
       cout << "write message: \n";
       cout << ">> ";
-      memset(buff, '\0', sizeof buff);
-      cin >> buff;
+      memset(buff, 0, sizeof buff);
+      cin >> tmp;
       //getline( cin, tmp);
-      //if(send(s, tmp.c_str(), tmp.length(), 0 ) == -1){
-      if(send(s, buff, strlen(buff), 0 ) == -1){
+      if(send(s, tmp.c_str(), tmp.length(), 0 ) == -1){
+      //if(send(s, buff, strlen(buff), 0 ) == -1){
         perror("Client send error\n");
         exit(1);
       }
@@ -188,12 +188,12 @@ int main(int argc, char *argv[]) {
       //ask for message to broadcast
       cout << "write message: \n";
       cout << ">> ";
-      memset(buff, '\0', sizeof buff);
-      cin >> buff;
+      memset(buff, 0, sizeof buff);
+      cin >> tmp;
       //getline( cin, tmp);
 
-      //if(send(s, tmp.c_str(), tmp.length(), 0 ) == -1){
-      if(send(s, buff, strlen(buff), 0 ) == -1){
+      if(send(s, tmp.c_str(), tmp.length(), 0 ) == -1){
+      //if(send(s, buff, strlen(buff), 0 ) == -1){
 
         perror("Client send error\n");
         exit(1);
