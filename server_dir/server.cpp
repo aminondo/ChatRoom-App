@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <string>
+#include <cstring>
 #include <string.h>
 #include <iostream>
 #include "users.h"
 #include <pthread.h>
+//#include <thread>
 #include <unistd.h>
 #include <errno.h>
 #include <vector>
@@ -27,12 +28,13 @@ struct thread_args {
   int s;
   int client_s;
   user_list reg_users;
+  //pthread_t thread_id;
 };
 
 //prototypes
 void *client_interact(void *ptr);
 
-vector<string> active_users;
+vector<active> active_users;
 
 
 int main() {
@@ -75,7 +77,6 @@ int main() {
   cout << "waiting for connection\n" << endl;
   //wait for connection
   while((client_s = accept(s, (struct sockaddr *)&sin, &len)) > 0){
-
     if(NUM_THREADS == 10) {
       cout << "Connection refused: Max clients online.\n";
       continue;
@@ -90,14 +91,16 @@ int main() {
     args.s = s;
     args.client_s = client_s;
     args.reg_users = reg_users;
+    //args.client_s = thread;
 
     NUM_THREADS++;
     if(pthread_create(&thread, NULL, client_interact, &args) < 0) {
       perror("Error creating thread\n");
       exit(1);
     }
+    //cout << "printing thread: " << thread << endl;
     //join threads
-    pthread_join(thread, NULL);
+    //pthread_join(thread, NULL);
   }
 
 
@@ -113,6 +116,7 @@ void *client_interact(void *ptr) {
   data = (thread_args *) ptr;
   int s = data->s;
   int client_s = data->client_s;
+  //pthread_t thread_id = data->thread_id;
   user_list reg_users = data->reg_users;
 
   char buff[MAXLINE], msg[MAXLINE];
@@ -192,7 +196,10 @@ void *client_interact(void *ptr) {
   cout << "user logged in\n";
   //update reg_users file
   //add user to active users
-  active_users.push_back(username);
+  active tmp = active();
+  tmp.username = username;
+  tmp.client_s = client_s;
+  active_users.push_back(tmp);
   //send ack to client
   bzero((char *)&msg, sizeof(msg));
   strcat(msg, "ACK");
@@ -202,34 +209,121 @@ void *client_interact(void *ptr) {
   }
 
   //waiting for command from user
+
   while(1) {
-      //receive command from user
+    //receive command from user
+    bzero((char *)&buff, sizeof(buff));
+    if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
+      perror("Server recieve error");
+      exit(1);
+    }
+    cout << "command received: " << buff << endl;
+    if(!strncmp(buff, "E", 1)){ //if E
+      //remove active user from vector
+      for(vector<active>::iterator it = active_users.begin(); it != active_users.end(); ++it){
+        if ((*it).username == username){
+          cout << "removing active user\n";
+          active_users.erase(it);
+          cout << "removed active user\n";
+          break; //stop for loop
+        }
+      }
+      break; //stop while loop
+    } else if(!strncmp(buff, "P", 1)){ //if P
+      active recvr = active();
+      bzero((char *)&msg, sizeof(msg));
+      strcat(msg, "C { ");
+
+      for(vector<active>::iterator it = active_users.begin(); it != active_users.end(); ++it){
+        strcat(msg, (*it).username.c_str());
+        strcat(msg, " ");
+      }
+      strcat(msg, "}");
+      cout << msg << endl;
+      //send active users
+      if(send(client_s, msg, strlen(msg), 0) == -1){
+        perror("Server send error\n");
+        exit(1);
+      }
+      //recieve username for private message
+      bzero((char *)&buff, sizeof(buff));
       if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
         perror("Server recieve error");
         exit(1);
       }
-      if(!strncmp(buff, "E", 1)){ //if E
-        //remove active user from vector
-        for(vector<string>::iterator it = active_users.begin(); it != active_users.end(); ++it){
-          if (*it == username){
-            cout << "removing active user\n";
-            active_users.erase(it);
-            cout << "removed active user\n";
-            break; //stop for loop
-          }
-        }
-        break; //stop while loop
-      } else if(!strncmp(buff, "P", 1)){ //if P
+      recvr.username = buff;
+      cout << "printing username to private message to " << recvr.username << endl;
 
-      } else if(!strncmp(buff, "B", 1)){ //if B
+
+      //recieve message
+      bzero((char *)&buff, sizeof(buff));
+      if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
+        perror("Server recieve error");
+        exit(1);
+      }
+
+      //check whether username exists, if it exists send message and confirmation
+      //back to user, otherwise send failed message back to user
+      int found = 0;
+      for(vector<active>::iterator it = active_users.begin(); it != active_users.end(); ++it){
+        if((*it).username == recvr.username) {
+          cout << "user found\n";
+          found = 1;
+          recvr.client_s = (*it).client_s;
+        }
+      }
+
+      if(found) {
+        //send confirmation back to user
+        bzero((char *)&msg, sizeof(msg));
+        strcat(msg, "D message sent successfully\n");
+        if(send(client_s, msg, strlen(msg), 0) == -1){
+          perror("Server send error\n");
+          exit(1);
+        }
+        //format message and send to receipient
+        bzero((char *)&msg, sizeof(msg));
+        strcat(msg, "D ");
+        strcat(msg, username.c_str());
+        strcat(msg, ": ");
+        string tmp(buff);
+        strcat(msg, tmp.c_str());
+        cout << msg << endl;
+        if(send(recvr.client_s, msg, strlen(msg), 0) == -1){
+          perror("Server send error\n");
+          exit(1);
+        }
 
       } else {
-        cout << "command not understood\n";
+        cout << "user not found\n";
+        //send confirmation back to user
+        bzero((char *)&msg, sizeof(msg));
+        strcat(msg, "D message send failed\n");
+        cout << msg << endl;
+        if(send(client_s, msg, strlen(msg), 0) == -1){
+          perror("Server send error\n");
+          exit(1);
+        }
       }
+
+    } else if(!strncmp(buff, "B", 1)){ //if B
+      //wait for message
+      //recieve message
+      bzero((char *)&buff, sizeof(buff));
+      if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
+        perror("Server recieve error");
+        exit(1);
+      }
+      cout << "message to broadcast " << buff << endl;
+
+    } else {
+      cout << "command not understood\n";
+    }
 
 
   }
 
   cout << "connection closed\n";
   close(client_s);
+  //thread_exit();
 }

@@ -15,6 +15,7 @@
 #define PORT 41046
 #define MAXLINE 256
 int len, s;
+bool ACTIVE = 1;
 
 using namespace std;
 
@@ -111,17 +112,19 @@ int main(int argc, char *argv[]) {
 
   pthread_t thread;
   int rc = pthread_create(&thread, NULL, handle_messages, NULL);
+  if(rc) {
+    cout << "ERROR: unable to create thread\n";
+    exit(-1);
+  }
 
-  //prompt user for operation
   while(1){
-    if(rc) {
-      cout << "ERROR: unable to create thread\n";
-      exit(-1);
-    }
+    //prompt user for operation
+    //pthread_join(thread, NULL);
     cout << "press B for broadcasting.\n";
     cout << "press P for private messaging.\n";
     cout << "press E for exit.\n";
     cout << ">> ";
+    bzero((char *)&op, sizeof(op));
     cin >> op;
     if(!strncmp(op, "E", 1)){ //quit command
       cout << "Goodbye!\n";
@@ -130,14 +133,56 @@ int main(int argc, char *argv[]) {
         perror("Client send error\n");
         exit(1);
       }
-
+      ACTIVE = 0;
       break;
     }
     if(!strncmp(op, "P", 1)){ //private message
       //private_message();
+      cout << "Sending private message!\n";
+      //send request for active users
+      if(send(s, op, strlen(op), 0 ) == -1){
+        perror("Client send error\n");
+        exit(1);
+      }
+      //cout << "sent request for active users\n";
+      //recieve active users, handled by separate thread
+      cout << "select user: ";
+      sleep(1);
+      cout << "\n>> ";
+      bzero((char *)&buff, sizeof(buff));
+      cin >> buff;
+      if(send(s, buff, strlen(buff), 0 ) == -1){
+        perror("Client send error\n");
+        exit(1);
+      }
+      //send message back to server
+      cout << "write message: \n";
+      cout << ">> ";
+      bzero((char *)&buff, sizeof(buff));
+      cin >> buff;
+      if(send(s, buff, strlen(buff), 0 ) == -1){
+        perror("Client send error\n");
+        exit(1);
+      }
+
+
     }
     if(!strncmp(op, "B", 1)){ //broadcast message
-      //broadcast();
+      //send operation to server
+      if(send(s, op, strlen(op), 0 ) == -1){
+        perror("Client send error\n");
+        exit(1);
+      }
+      //ask for message to broadcast
+      cout << "write message: \n";
+      cout << ">> ";
+      bzero((char *)&buff, sizeof(buff));
+      cin >> buff;
+      if(send(s, buff, strlen(buff), 0 ) == -1){
+        perror("Client send error\n");
+        exit(1);
+      }
+
     }
   }
 
@@ -147,17 +192,42 @@ int main(int argc, char *argv[]) {
 
 void *handle_messages(void *) {
   char buff[MAXLINE];
-  if((len = recv(s, buff, sizeof(buff), 0)) == -1){
-    perror("Client receive error\n");
-    exit(1);
-  }
-  while (1) {
-    string message;
+  //bzero((char *)&op, sizeof(op));
+  while(ACTIVE) {
+    if((len = recv(s, buff, sizeof(buff), 0)) == -1){
+      perror("Client receive error\n");
+      exit(1);
+    }
+    //string message;
     //data message
-    if (1){
+    //cout << buff[0];
+    if (!strncmp(buff, "D", 1)){
+      cout << "receiving...\n";
+      string tmp(buff);
+      tmp.erase(0,2);
+      cout << "\n\n************************************\n";
+      cout << tmp << endl;
+      cout << "************************************\n\n";
+
+      cout << "press B for broadcasting.\n";
+      cout << "press P for private messaging.\n";
+      cout << "press E for exit.\n";
+      cout << ">> ";
+
+
 
     }else {
+      string tmp(buff);
+      tmp.erase(0, 2);
       //handle command message
+      //if first element is C
+      //cout << "\ncommand message\n";
+      cout << tmp << endl;
     }
+
+
   }
+
+  //exit(1);
+
 }

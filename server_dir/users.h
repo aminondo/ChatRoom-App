@@ -7,8 +7,15 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <pthread.h>
 
 using namespace std;
+
+struct active {
+  string username;
+  //pthread_t id;
+  int client_s;
+};
 
 struct User {
     string username;
