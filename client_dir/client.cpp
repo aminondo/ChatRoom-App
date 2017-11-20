@@ -16,6 +16,11 @@
 
 using namespace std;
 
+void *handler(void *threadid) {
+  //handle request x
+  pthread_exit(NULL);
+}
+
 int main(int argc, char *argv[]) {
   struct hostent *hp;
   struct sockaddr_in sin;

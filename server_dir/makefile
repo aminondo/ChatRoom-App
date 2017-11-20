@@ -1,5 +1,5 @@
 server: server.o users.o
-	g++ -o server server.o users.o
+	g++ -pthread -o server server.o users.o
 
 server.o: server.cpp
 	g++ -c server.cpp
