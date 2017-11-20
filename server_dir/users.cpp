@@ -1,3 +1,11 @@
+/*
+Antonio Minondo
+aminondo
+users.cpp
+this file contains the implementation of users.h
+*/
+
+
 #include "users.h"
 using namespace std;
 

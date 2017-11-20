@@ -1,3 +1,12 @@
+/*
+Antonio Minondo
+aminondo
+client.cpp
+this file contains the implementation too run a client that connectes
+to a multi user chat room
+*/
+
+
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -124,7 +133,7 @@ int main(int argc, char *argv[]) {
     cout << "press P for private messaging.\n";
     cout << "press E for exit.\n";
     cout << ">> ";
-    bzero((char *)&op, sizeof(op));
+    memset(op, '\0', sizeof op);
     cin >> op;
     if(!strncmp(op, "E", 1)){ //quit command
       cout << "Goodbye!\n";
@@ -137,6 +146,7 @@ int main(int argc, char *argv[]) {
       break;
     }
     if(!strncmp(op, "P", 1)){ //private message
+      string tmp;
       //private_message();
       cout << "Sending private message!\n";
       //send request for active users
@@ -148,7 +158,7 @@ int main(int argc, char *argv[]) {
       //recieve active users, handled by separate thread
       cout << "select user: ";
       cout << "\n>> ";
-      bzero((char *)&buff, sizeof(buff));
+      memset(buff, '\0', sizeof buff);
       cin >> buff;
       if(send(s, buff, strlen(buff), 0 ) == -1){
         perror("Client send error\n");
@@ -157,8 +167,10 @@ int main(int argc, char *argv[]) {
       //send message back to server
       cout << "write message: \n";
       cout << ">> ";
-      bzero((char *)&buff, sizeof(buff));
+      memset(buff, '\0', sizeof buff);
       cin >> buff;
+      //getline( cin, tmp);
+      //if(send(s, tmp.c_str(), tmp.length(), 0 ) == -1){
       if(send(s, buff, strlen(buff), 0 ) == -1){
         perror("Client send error\n");
         exit(1);
@@ -167,6 +179,7 @@ int main(int argc, char *argv[]) {
 
     }
     if(!strncmp(op, "B", 1)){ //broadcast message
+      string tmp;
       //send operation to server
       if(send(s, op, strlen(op), 0 ) == -1){
         perror("Client send error\n");
@@ -175,9 +188,13 @@ int main(int argc, char *argv[]) {
       //ask for message to broadcast
       cout << "write message: \n";
       cout << ">> ";
-      bzero((char *)&buff, sizeof(buff));
+      memset(buff, '\0', sizeof buff);
       cin >> buff;
+      //getline( cin, tmp);
+
+      //if(send(s, tmp.c_str(), tmp.length(), 0 ) == -1){
       if(send(s, buff, strlen(buff), 0 ) == -1){
+
         perror("Client send error\n");
         exit(1);
       }
@@ -191,7 +208,7 @@ int main(int argc, char *argv[]) {
 
 void *handle_messages(void *) {
   char buff[MAXLINE];
-  //bzero((char *)&op, sizeof(op));
+  //memset(op, '\0', sizeof op);
   while(ACTIVE) {
     if((len = recv(s, buff, sizeof(buff), 0)) == -1){
       perror("Client receive error\n");

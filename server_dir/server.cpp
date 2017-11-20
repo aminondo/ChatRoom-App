@@ -1,3 +1,14 @@
+/*
+Antonio Minondo
+aminondo
+server.cpp
+this file contains the implementation too run a server that can handle
+multiple users using concurrency.
+*/
+
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -47,6 +58,7 @@ int main() {
 
   //build address data structure
   bzero(&sin, sizeof(sin));
+  //memset(sin, '\0', sizeof sin);
   sin.sin_family = AF_INET;
   sin.sin_addr.s_addr = INADDR_ANY;
   sin.sin_port = htons(PORT);
@@ -124,7 +136,7 @@ void *client_interact(void *ptr) {
   string username, password;
 
   //receive username
-  bzero((char *)&buff, sizeof(buff));
+  memset(buff, '\0', sizeof buff);
   if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
     perror("Server recieve error");
     exit(1);
@@ -133,7 +145,7 @@ void *client_interact(void *ptr) {
   cout << "username trying to connect: " << username << endl;
   //check whether username already registered
   if(reg_users.search(username) == 0){ //if exists ask for password
-    bzero((char *)&msg, sizeof(msg));
+    memset(msg, '\0', sizeof msg);
     strcat(msg, "username exists. enter password: \n");
     //send password request
     if(send(client_s, msg, strlen(msg), 0) == -1){
@@ -141,7 +153,7 @@ void *client_interact(void *ptr) {
       exit(1);
     }
     //receive password
-    bzero((char *)&buff, sizeof(buff));
+    memset(buff, '\0', sizeof buff);
     if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
       perror("Server recieve error");
       exit(1);
@@ -150,14 +162,14 @@ void *client_interact(void *ptr) {
     while(reg_users.validate_user(username, password) == 1) { //password incorrect
       cout << "password incorrect\n";
       //reset msg buffer and request password again
-      bzero((char *)&msg, sizeof(msg));
+      memset(msg, '\0', sizeof msg);
       strcat(msg,"password incorrect. try again: \n");
       cout << msg << endl;
       if(send(client_s, msg, strlen(msg), 0) == -1){
         perror("Server send error\n");
         exit(1);
       }
-      bzero((char *)&buff, sizeof(buff));
+      memset(buff, '\0', sizeof buff);
       if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
         perror("Server recieve error");
         exit(1);
@@ -168,7 +180,7 @@ void *client_interact(void *ptr) {
     }
   } else { //if user doesnt exist, register user
     cout << "registering user\n";
-    bzero((char *)&msg, sizeof(msg));
+    memset(msg, '\0', sizeof msg);
     strcat(msg, "username doesn't exist. enter a password to register: \n");
     //send password request
     if(send(client_s, msg, strlen(msg), 0) == -1){
@@ -176,7 +188,7 @@ void *client_interact(void *ptr) {
       exit(1);
     }
     //receive password
-    bzero((char *)&buff, sizeof(buff));
+    memset(buff, '\0', sizeof buff);
 
     if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
       perror("Server recieve error");
@@ -201,7 +213,7 @@ void *client_interact(void *ptr) {
   tmp.client_s = client_s;
   active_users.push_back(tmp);
   //send ack to client
-  bzero((char *)&msg, sizeof(msg));
+  memset(msg, '\0', sizeof msg);
   strcat(msg, "ACK");
   if(send(client_s, msg, strlen(msg), 0) == -1){
     perror("Server send error\n");
@@ -212,7 +224,7 @@ void *client_interact(void *ptr) {
 
   while(1) {
     //receive command from user
-    bzero((char *)&buff, sizeof(buff));
+    memset(buff, '\0', sizeof buff);
     if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
       perror("Server recieve error");
       exit(1);
@@ -231,7 +243,8 @@ void *client_interact(void *ptr) {
       break; //stop while loop
     } else if(!strncmp(buff, "P", 1)){ //if P
       active recvr = active();
-      bzero((char *)&msg, sizeof(msg));
+      memset(msg, '\0', sizeof msg);
+      cout << msg << endl;
       strcat(msg, "C { ");
 
       for(vector<active>::iterator it = active_users.begin(); it != active_users.end(); ++it){
@@ -246,7 +259,7 @@ void *client_interact(void *ptr) {
         exit(1);
       }
       //recieve username for private message
-      bzero((char *)&buff, sizeof(buff));
+      memset(buff, '\0', sizeof buff);
       if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
         perror("Server recieve error");
         exit(1);
@@ -256,7 +269,7 @@ void *client_interact(void *ptr) {
 
 
       //recieve message
-      bzero((char *)&buff, sizeof(buff));
+      memset(buff, '\0', sizeof buff);
       if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
         perror("Server recieve error");
         exit(1);
@@ -275,14 +288,14 @@ void *client_interact(void *ptr) {
 
       if(found) {
         //send confirmation back to user
-        bzero((char *)&msg, sizeof(msg));
+        memset(msg, '\0', sizeof msg);
         strcat(msg, "D message sent successfully\n");
         if(send(client_s, msg, strlen(msg), 0) == -1){
           perror("Server send error\n");
           exit(1);
         }
         //format message and send to receipient
-        bzero((char *)&msg, sizeof(msg));
+        memset(msg, '\0', sizeof msg);
         strcat(msg, "D ");
         strcat(msg, username.c_str());
         strcat(msg, ": ");
@@ -298,7 +311,7 @@ void *client_interact(void *ptr) {
       } else {
         cout << "user not found\n";
         //send confirmation back to user
-        bzero((char *)&msg, sizeof(msg));
+        memset(msg, '\0', sizeof msg);
         strcat(msg, "D message send failed\n");
         cout << msg << endl;
         if(send(client_s, msg, strlen(msg), 0) == -1){
@@ -310,14 +323,14 @@ void *client_interact(void *ptr) {
     } else if(!strncmp(buff, "B", 1)){ //if B
       //wait for message
       //recieve message
-      bzero((char *)&buff, sizeof(buff));
+      memset(buff, '\0', sizeof buff);
       cout << buff;
       if((len = recv(client_s, buff, sizeof(buff), 0)) == -1){
         perror("Server recieve error");
         exit(1);
       }
       cout << buff << endl;
-      bzero((char *)&msg, sizeof(msg));
+      memset(msg, '\0', sizeof msg);
       strcat(msg, "D Broadcast:");
       strcat(msg, buff);
 

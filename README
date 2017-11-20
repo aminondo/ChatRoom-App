@@ -1,0 +1,26 @@
+CHAT ROOM
+
+this program simulates a chat room between multiple users. Users can either
+send private messages or broadcast messages to all online users
+
+Listing of Files:
+
+server_dir/
+  makefile - makefile for server
+  server.cpp - source file for server
+  users.cpp - implementation of user data structure
+  users.h - header file for users
+  users.txt - recorder users and their passwords
+
+client_dir
+  makefile - makefile for client
+  client.cpp - source file for client
+
+
+  How to Run -
+
+  server:
+    ./server
+
+  client:
+    ./client student02.cse.nd.edu 41046 <username>
