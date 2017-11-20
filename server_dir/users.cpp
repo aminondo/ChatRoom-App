@@ -1,31 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <sstream>
-
+#include "users.h"
 using namespace std;
 
 
-struct User {
-    string username;
-    string password;
-    struct User *nxt;
-};
-
-
-class user_list {
-  public:
-    User *head;
-    user_list() { head = NULL; }
-    void add_user(string user, string pass);
-    void print_users();
-    int search(string username);
-    int validate_user(struct User);
-    int write_to_file();
-    int read_from_file();
-};
 
 void user_list::add_user(string user, string pass){
   struct User *tmp, *p;
@@ -87,18 +63,27 @@ int user_list::read_from_file(){
       add_user(user, pass);
     }
     myfile.close();
+    return 0;
   }
-  return 0;
+  return 1;
 }
 
-
+int user_list::validate_user(string username, string password){
+  struct User *tmp = head;
+  while (tmp != NULL) {
+    if(tmp->username == username && tmp->password == password)
+      return 0; //validation correct
+  }
+  return 1; //validation failed
+}
+/*
 int main(){
   user_list users;// = user_list();
   //users.add_user("alice", "password");
-  users.read_from_file();
-  users.print_users();
-  users.add_user("antonoi", "fasdaf");
+  cout << users.read_from_file() << endl;
+  //users.print_users();
+  //users.add_user("antonoi", "fasdaf");
 
   cout << users.search("alice") << endl;
   users.write_to_file();
-}
+}*/

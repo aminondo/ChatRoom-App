@@ -3,8 +3,7 @@
 #include <string>
 #include <string.h>
 #include <iostream>
-//#include <vector>
-//#include <utility>
+#include "users.h"
 
 //networks
 #include <sys/types.h>
@@ -27,8 +26,12 @@ int main() {
   char buff[MAXLINE], msg[MAXLINE], path[MAXLINE];
   int s, new_s, opt;
   unsigned int len;
-  //users
-  //vector<pair<string, string> > users;
+  string username, password;
+  user_list reg_users;
+
+  //load registered users
+  if(reg_users.read_from_file() == 1)
+    cout << "No users registered\n";
 
   //build address data structure
   bzero(&sin, sizeof(sin));
@@ -68,14 +71,46 @@ int main() {
       exit(1);
     }
 
-    while(1) {
+  //receive username
+  if((len = recv(new_s, buff, sizeof(buff), 0)) == -1){
+    perror("Server recieve error");
+    exit(1);
+  }
+  if(len==0)
+    break;
+  username = buff;
+  cout << "username trying to connect: " << username << endl;
+  //check whether username already registered
+  if(reg_users.search(username) == 0){ //if exists ask for password
+    cout << "username exists. enter password: \n";
+    //receive password
+    if((len = recv(new_s, buff, sizeof(buff), 0)) == -1){
+      perror("Server recieve error");
+      exit(1);
+    }
+    if(len==0)
+      break;
+    password = buff;
+    while(reg_users.validate_user(username, password) == 1) { //password incorrect
+      cout << "password incorrect. try again: \n";
       if((len = recv(new_s, buff, sizeof(buff), 0)) == -1){
         perror("Server recieve error");
         exit(1);
       }
       if(len==0)
         break;
-      cout << "connected to " << buff << endl;
+      password = buff;
+    }
+  } else { //if user doesnt exist, register user
+    cout << "username doesn't exist. enter a password to register: \n";
+    cin >> password;
+    reg_users.add_user(username, password);
+  }
+
+
+    while(1) {
+
+
     }
   }
 
